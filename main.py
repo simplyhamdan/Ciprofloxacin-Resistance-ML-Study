@@ -1,5 +1,19 @@
 import pandas as pd
 import requests
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    confusion_matrix
+)
 
 
 # Internal messages
@@ -302,8 +316,6 @@ log_message(
 
 # 16. Split data into training and testing sets
 
-from sklearn.model_selection import train_test_split
-
 X_train, X_test, y_train, y_test = train_test_split(
     X,
     y,
@@ -324,9 +336,6 @@ log_message(
 
 
 # 17. Train a Logistic Regression model
-
-from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LogisticRegression
 
 scaler = StandardScaler()
 
@@ -354,12 +363,6 @@ log_message(
 
 # 19. Evaluate Logistic Regression
 
-from sklearn.metrics import (
-    accuracy_score,
-    classification_report,
-    confusion_matrix
-)
-
 accuracy = accuracy_score(y_test, y_pred)
 
 logistic_report = classification_report(
@@ -374,8 +377,6 @@ logistic_cm = confusion_matrix(
 
 
 # 20. Train a Random Forest model
-
-from sklearn.ensemble import RandomForestClassifier
 
 rf_model = RandomForestClassifier(
     n_estimators=100,
@@ -408,12 +409,58 @@ rf_cm = confusion_matrix(
     rf_predictions
 )
 
+# 27. Decision Tree Model
+
+dt_model = DecisionTreeClassifier(
+    random_state=42
+)
+
+dt_model.fit(X_train, y_train)
+
+dt_predictions = dt_model.predict(X_test)
+
+dt_accuracy = accuracy_score(
+    y_test,
+    dt_predictions
+)
+
+dt_report = classification_report(
+    y_test,
+    dt_predictions
+)
+
+dt_cm = confusion_matrix(
+    y_test,
+    dt_predictions
+)
+
+# 28. Support Vector Machine Model
+
+svm_model = SVC(
+    random_state=42
+)
+
+svm_model.fit(X_train, y_train)
+
+svm_predictions = svm_model.predict(X_test)
+
+svm_accuracy = accuracy_score(
+    y_test,
+    svm_predictions
+)
+
+svm_report = classification_report(
+    y_test,
+    svm_predictions
+)
+
+svm_cm = confusion_matrix(
+    y_test,
+    svm_predictions
+)
+
 
 # 23. Visualization functions
-
-import matplotlib.pyplot as plt
-import seaborn as sns
-
 
 def resistance_distribution():
     """Plot the number of resistant and susceptible genomes."""
@@ -609,7 +656,9 @@ def visualization_menu():
         print("[5] Resistant vs Susceptible Features")
         print("[6] Logistic Regression Confusion Matrix")
         print("[7] Random Forest Confusion Matrix")
-        print("[8] Back")
+        print("[8] Decision Tree Confusion Matrix")
+        print("[9] Support Vector Machine Confusion Matrix")
+        print("[10] Back")
 
         choice = input("\nEnter your choice: ").strip()
 
@@ -641,11 +690,107 @@ def visualization_menu():
             )
 
         elif choice == "8":
+            plot_confusion_matrix(
+                dt_cm,
+                "Decision Tree Confusion Matrix"
+            )
+
+        elif choice == "9":
+            plot_confusion_matrix(
+                svm_cm,
+                "Support Vector Machine Confusion Matrix"
+            )
+
+        elif choice == "10":
             break
 
         else:
-            print("\nInvalid choice. Please enter 1-8.")
+            print("\nInvalid choice. Please enter 1-10.")
 
+
+def compare_models():
+
+    comparison = pd.DataFrame({
+        "Model": [
+            "Logistic Regression",
+            "Random Forest",
+            "Decision Tree",
+            "Support Vector Machine"
+        ],
+        "Accuracy": [
+            accuracy_score(y_test, y_pred),
+            accuracy_score(y_test, rf_predictions),
+            accuracy_score(y_test, dt_predictions),
+            accuracy_score(y_test, svm_predictions)
+        ],
+        "Precision": [
+            classification_report(
+                y_test, y_pred, output_dict=True
+            )["weighted avg"]["precision"],
+
+            classification_report(
+                y_test, rf_predictions, output_dict=True
+            )["weighted avg"]["precision"],
+
+            classification_report(
+                y_test, dt_predictions, output_dict=True
+            )["weighted avg"]["precision"],
+
+            classification_report(
+                y_test, svm_predictions, output_dict=True
+            )["weighted avg"]["precision"]
+        ],
+        "Recall": [
+            classification_report(
+                y_test, y_pred, output_dict=True
+            )["weighted avg"]["recall"],
+
+            classification_report(
+                y_test, rf_predictions, output_dict=True
+            )["weighted avg"]["recall"],
+
+            classification_report(
+                y_test, dt_predictions, output_dict=True
+            )["weighted avg"]["recall"],
+
+            classification_report(
+                y_test, svm_predictions, output_dict=True
+            )["weighted avg"]["recall"]
+        ],
+        "F1 Score": [
+            classification_report(
+                y_test, y_pred, output_dict=True
+            )["weighted avg"]["f1-score"],
+
+            classification_report(
+                y_test, rf_predictions, output_dict=True
+            )["weighted avg"]["f1-score"],
+
+            classification_report(
+                y_test, dt_predictions, output_dict=True
+            )["weighted avg"]["f1-score"],
+
+            classification_report(
+                y_test, svm_predictions, output_dict=True
+            )["weighted avg"]["f1-score"]
+        ]
+    })
+
+    print("\n========================================")
+    print("         MODEL COMPARISON")
+    print("========================================")
+
+    print(
+        comparison.to_string(
+            index=False,
+            formatters={
+                "Accuracy": "{:.2%}".format,
+                "Precision": "{:.2%}".format,
+                "Recall": "{:.2%}".format,
+                "F1 Score": "{:.2%}".format
+            }
+        )
+    )
 
 # 25. View Internal Messages
 
@@ -659,6 +804,93 @@ def view_internal_messages():
         print(message)
 
 
+# 28.(yes it is odd, but i made this after step 27) Learning Models Menu
+
+def model_menu():
+
+    while True:
+
+        print("\n========================================")
+        print("           LEARNING MODELS")
+        print("========================================")
+        print("[1] Logistic Regression")
+        print("[2] Random Forest")
+        print("[3] Decision Tree")
+        print("[4] Support Vector Machine")
+        print("[5] Compare Models")
+        print("[6] Back")
+
+        choice = input("\nEnter your choice: ").strip()
+
+        if choice == "1":
+
+            print("\n========================================")
+            print("       LOGISTIC REGRESSION")
+            print("========================================")
+
+            print(f"\nAccuracy: {accuracy:.2%}")
+
+            print("\nClassification Report:")
+            print(logistic_report)
+
+            print("\nConfusion Matrix:")
+            print(logistic_cm)
+
+        elif choice == "2":
+
+            print("\n========================================")
+            print("          RANDOM FOREST")
+            print("========================================")
+
+            print(f"\nAccuracy: {rf_accuracy:.2%}")
+
+            print("\nClassification Report:")
+            print(rf_report)
+
+            print("\nConfusion Matrix:")
+            print(rf_cm)
+
+        elif choice == "3":
+
+            print("\n========================================")
+            print("          DECISION TREE")
+            print("========================================")
+
+            print(f"\nAccuracy: {dt_accuracy:.2%}")
+
+            print("\nClassification Report:")
+            print(dt_report)
+
+            print("\nConfusion Matrix:")
+            print(dt_cm)
+
+        elif choice == "4":
+
+            print("\n========================================")
+            print(" SUPPORT VECTOR MACHINE")
+            print("========================================")
+
+            print(f"\nAccuracy: {svm_accuracy:.2%}")
+
+            print("\nClassification Report:")
+            print(svm_report)
+
+            print("\nConfusion Matrix:")
+            print(svm_cm)
+
+        elif choice == "5":
+
+            compare_models()
+
+        elif choice == "6":
+
+            break
+
+        else:
+
+            print("\nInvalid choice. Please enter 1-6.")
+
+
 # 26. Main Menu
 
 print("\nModels ready.")
@@ -666,79 +898,25 @@ print("\nModels ready.")
 while True:
 
     print("\n========================================")
-    print("   ANTIBIOTIC RESISTANCE PREDICTOR")
+    print("      CIPROFLOXACIN RESISTANCE ML STUDY")
     print("========================================")
-    print("[1] Logistic Regression")
-    print("[2] Random Forest")
-    print("[3] Compare Both Models")
-    print("[4] Visualize Dataset")
-    print("[5] Feature Importance")
-    print("[6] View Internal Messages")
-    print("[7] Exit")
+    print("[1] Machine Learning Models")
+    print("[2] Visualize Dataset")
+    print("[3] Feature Importance")
+    print("[4] View Internal Messages")
+    print("[5] Exit")
 
     choice = input("\nEnter your choice: ").strip()
 
     if choice == "1":
 
-        print("\n========================================")
-        print("       LOGISTIC REGRESSION")
-        print("========================================")
-
-        print(f"\nAccuracy: {accuracy:.2%}")
-
-        print("\nClassification Report:")
-        print(logistic_report)
-
-        print("\nConfusion Matrix:")
-        print(logistic_cm)
+        model_menu()
 
     elif choice == "2":
 
-        print("\n========================================")
-        print("          RANDOM FOREST")
-        print("========================================")
-
-        print(f"\nAccuracy: {rf_accuracy:.2%}")
-
-        print("\nClassification Report:")
-        print(rf_report)
-
-        print("\nConfusion Matrix:")
-        print(rf_cm)
-
-    elif choice == "3":
-
-        print("\n========================================")
-        print("         MODEL COMPARISON")
-        print("========================================")
-
-        print(
-            f"\nLogistic Regression Accuracy: "
-            f"{accuracy:.2%}"
-        )
-
-        print(
-            f"Random Forest Accuracy:       "
-            f"{rf_accuracy:.2%}"
-        )
-
-        if rf_accuracy > accuracy:
-
-            print("\nRandom Forest performed better.")
-
-        elif accuracy > rf_accuracy:
-
-            print("\nLogistic Regression performed better.")
-
-        else:
-
-            print("\nBoth models performed equally.")
-
-    elif choice == "4":
-
         visualization_menu()
 
-    elif choice == "5":
+    elif choice == "3":
 
         print("\n========================================")
         print("       RANDOM FOREST FEATURE IMPORTANCE")
@@ -746,15 +924,15 @@ while True:
 
         random_forest_importance()
 
-    elif choice == "6":
+    elif choice == "4":
 
         view_internal_messages()
 
-    elif choice == "7":
+    elif choice == "5":
 
         print("\nExiting program...")
         break
 
     else:
 
-        print("\nInvalid choice. Please enter 1-7.")
+        print("\nInvalid choice. Please enter 1-5.")
