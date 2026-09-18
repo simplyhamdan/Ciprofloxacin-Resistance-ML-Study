@@ -9,11 +9,16 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier 
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.naive_bayes import GaussianNB 
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
-    confusion_matrix
+    confusion_matrix,
+    roc_auc_score
 )
+from xgboost import XGBClassifier
 
 
 # Internal messages
@@ -440,9 +445,9 @@ svm_model = SVC(
     random_state=42
 )
 
-svm_model.fit(X_train, y_train)
+svm_model.fit(X_train_scaled, y_train)
 
-svm_predictions = svm_model.predict(X_test)
+svm_predictions = svm_model.predict(X_test_scaled)
 
 svm_accuracy = accuracy_score(
     y_test,
@@ -459,6 +464,120 @@ svm_cm = confusion_matrix(
     svm_predictions
 )
 
+# 29. K-Nearest Neighbors Model
+
+knn_model = KNeighborsClassifier(
+    n_neighbors=5
+)
+
+knn_model.fit(
+    X_train_scaled,
+    y_train
+)
+
+knn_predictions = knn_model.predict(
+    X_test_scaled
+)
+
+knn_accuracy = accuracy_score(
+    y_test,
+    knn_predictions
+)
+
+knn_report = classification_report(
+    y_test,
+    knn_predictions
+)
+
+knn_cm = confusion_matrix(
+    y_test,
+    knn_predictions
+)
+
+# 30. Gradient Boosting Model
+
+gb_model = GradientBoostingClassifier(
+    random_state=42
+)
+
+gb_model.fit(X_train, y_train)
+
+gb_predictions = gb_model.predict(X_test)
+
+gb_accuracy = accuracy_score(
+    y_test,
+    gb_predictions
+)
+
+gb_report = classification_report(
+    y_test,
+    gb_predictions
+)
+
+gb_cm = confusion_matrix(
+    y_test,
+    gb_predictions
+)
+
+# 31. Gaussian Naive Bayes Model
+
+nb_model = GaussianNB()
+
+nb_model.fit(
+    X_train,
+    y_train
+)
+
+nb_predictions = nb_model.predict(
+    X_test
+)
+
+nb_accuracy = accuracy_score(
+    y_test,
+    nb_predictions
+)
+
+nb_report = classification_report(
+    y_test,
+    nb_predictions
+)
+
+nb_cm = confusion_matrix(
+    y_test,
+    nb_predictions
+)
+
+# 32. XGBoost Model
+
+xgb_model = XGBClassifier(
+    n_estimators=100,
+    random_state=42,
+    eval_metric="logloss"
+)
+
+xgb_model.fit(
+    X_train,
+    y_train
+)
+
+xgb_predictions = xgb_model.predict(
+    X_test
+)
+
+xgb_accuracy = accuracy_score(
+    y_test,
+    xgb_predictions
+)
+
+xgb_report = classification_report(
+    y_test,
+    xgb_predictions
+)
+
+xgb_cm = confusion_matrix(
+    y_test,
+    xgb_predictions
+)
 
 # 23. Visualization functions
 
@@ -658,7 +777,11 @@ def visualization_menu():
         print("[7] Random Forest Confusion Matrix")
         print("[8] Decision Tree Confusion Matrix")
         print("[9] Support Vector Machine Confusion Matrix")
-        print("[10] Back")
+        print("[10] K-Nearest Neighbors Confusion Matrix")
+        print("[11] Gradient Boosting Confusion Matrix")
+        print("[12] Gaussian Naive Bayes Confusion Matrix")
+        print("[13] XGBoost Confusion Matrix")
+        print("[14] Back")
 
         choice = input("\nEnter your choice: ").strip()
 
@@ -702,10 +825,34 @@ def visualization_menu():
             )
 
         elif choice == "10":
+            plot_confusion_matrix(
+                knn_cm,
+                "K-Nearest Neighbors Confusion Matrix"
+            )
+
+        elif choice == "11":
+            plot_confusion_matrix(
+                gb_cm,
+                "Gradient Boosting Confusion Matrix"
+            )
+
+        elif choice == "12":
+            plot_confusion_matrix(
+                nb_cm,
+                "Gaussian Naive Bayes Confusion Matrix"
+            )
+
+        elif choice == "13":
+            plot_confusion_matrix(
+                xgb_cm,
+                "XGBoost Confusion Matrix"
+            )
+
+        elif choice == "14":
             break
 
         else:
-            print("\nInvalid choice. Please enter 1-10.")
+            print("\nInvalid choice. Please enter 1-14.")
 
 
 def compare_models():
@@ -715,14 +862,24 @@ def compare_models():
             "Logistic Regression",
             "Random Forest",
             "Decision Tree",
-            "Support Vector Machine"
+            "Support Vector Machine",
+            "K-Nearest Neighbors",
+            "Gradient Boosting",
+            "Gaussian Naive Bayes",
+            "XGBoost"
         ],
+
         "Accuracy": [
             accuracy_score(y_test, y_pred),
             accuracy_score(y_test, rf_predictions),
             accuracy_score(y_test, dt_predictions),
-            accuracy_score(y_test, svm_predictions)
+            accuracy_score(y_test, svm_predictions),
+            accuracy_score(y_test, knn_predictions),
+            accuracy_score(y_test, gb_predictions),
+            accuracy_score(y_test, nb_predictions),
+            accuracy_score(y_test, xgb_predictions)
         ],
+
         "Precision": [
             classification_report(
                 y_test, y_pred, output_dict=True
@@ -738,8 +895,25 @@ def compare_models():
 
             classification_report(
                 y_test, svm_predictions, output_dict=True
+            )["weighted avg"]["precision"],
+
+            classification_report(
+                y_test, knn_predictions, output_dict=True
+            )["weighted avg"]["precision"],
+
+            classification_report(
+                y_test, gb_predictions, output_dict=True
+            )["weighted avg"]["precision"],
+
+            classification_report(
+                y_test, nb_predictions, output_dict=True
+            )["weighted avg"]["precision"],
+
+            classification_report(
+                y_test, xgb_predictions, output_dict=True
             )["weighted avg"]["precision"]
         ],
+
         "Recall": [
             classification_report(
                 y_test, y_pred, output_dict=True
@@ -755,8 +929,25 @@ def compare_models():
 
             classification_report(
                 y_test, svm_predictions, output_dict=True
+            )["weighted avg"]["recall"],
+
+            classification_report(
+                y_test, knn_predictions, output_dict=True
+            )["weighted avg"]["recall"],
+
+            classification_report(
+                y_test, gb_predictions, output_dict=True
+            )["weighted avg"]["recall"],
+
+            classification_report(
+                y_test, nb_predictions, output_dict=True
+            )["weighted avg"]["recall"],
+
+            classification_report(
+                y_test, xgb_predictions, output_dict=True
             )["weighted avg"]["recall"]
         ],
+
         "F1 Score": [
             classification_report(
                 y_test, y_pred, output_dict=True
@@ -772,6 +963,22 @@ def compare_models():
 
             classification_report(
                 y_test, svm_predictions, output_dict=True
+            )["weighted avg"]["f1-score"],
+
+            classification_report(
+                y_test, knn_predictions, output_dict=True
+            )["weighted avg"]["f1-score"],
+
+            classification_report(
+                y_test, gb_predictions, output_dict=True
+            )["weighted avg"]["f1-score"],
+
+            classification_report(
+                y_test, nb_predictions, output_dict=True
+            )["weighted avg"]["f1-score"],
+
+            classification_report(
+                y_test, xgb_predictions, output_dict=True
             )["weighted avg"]["f1-score"]
         ]
     })
@@ -817,8 +1024,12 @@ def model_menu():
         print("[2] Random Forest")
         print("[3] Decision Tree")
         print("[4] Support Vector Machine")
-        print("[5] Compare Models")
-        print("[6] Back")
+        print("[5] K-Nearest Neighbors")
+        print("[6] Gradient Boosting")
+        print("[7] Gaussian Naive Bayes")
+        print("[8] XGBoost")
+        print("[9] Compare Models")
+        print("[10] Back")
 
         choice = input("\nEnter your choice: ").strip()
 
@@ -829,10 +1040,8 @@ def model_menu():
             print("========================================")
 
             print(f"\nAccuracy: {accuracy:.2%}")
-
             print("\nClassification Report:")
             print(logistic_report)
-
             print("\nConfusion Matrix:")
             print(logistic_cm)
 
@@ -843,10 +1052,8 @@ def model_menu():
             print("========================================")
 
             print(f"\nAccuracy: {rf_accuracy:.2%}")
-
             print("\nClassification Report:")
             print(rf_report)
-
             print("\nConfusion Matrix:")
             print(rf_cm)
 
@@ -857,39 +1064,82 @@ def model_menu():
             print("========================================")
 
             print(f"\nAccuracy: {dt_accuracy:.2%}")
-
             print("\nClassification Report:")
             print(dt_report)
-
             print("\nConfusion Matrix:")
             print(dt_cm)
 
         elif choice == "4":
 
             print("\n========================================")
-            print(" SUPPORT VECTOR MACHINE")
+            print("       SUPPORT VECTOR MACHINE")
             print("========================================")
 
             print(f"\nAccuracy: {svm_accuracy:.2%}")
-
             print("\nClassification Report:")
             print(svm_report)
-
             print("\nConfusion Matrix:")
             print(svm_cm)
 
         elif choice == "5":
 
-            compare_models()
+            print("\n========================================")
+            print("       K-NEAREST NEIGHBORS")
+            print("========================================")
+
+            print(f"\nAccuracy: {knn_accuracy:.2%}")
+            print("\nClassification Report:")
+            print(knn_report)
+            print("\nConfusion Matrix:")
+            print(knn_cm)
 
         elif choice == "6":
+
+            print("\n========================================")
+            print("        GRADIENT BOOSTING")
+            print("========================================")
+
+            print(f"\nAccuracy: {gb_accuracy:.2%}")
+            print("\nClassification Report:")
+            print(gb_report)
+            print("\nConfusion Matrix:")
+            print(gb_cm)
+
+        elif choice == "7":
+
+            print("\n========================================")
+            print("       GAUSSIAN NAIVE BAYES")
+            print("========================================")
+
+            print(f"\nAccuracy: {nb_accuracy:.2%}")
+            print("\nClassification Report:")
+            print(nb_report)
+            print("\nConfusion Matrix:")
+            print(nb_cm)
+
+        elif choice == "8":
+
+            print("\n========================================")
+            print("              XGBOOST")
+            print("========================================")
+
+            print(f"\nAccuracy: {xgb_accuracy:.2%}")
+            print("\nClassification Report:")
+            print(xgb_report)
+            print("\nConfusion Matrix:")
+            print(xgb_cm)
+
+        elif choice == "9":
+
+            compare_models()
+
+        elif choice == "10":
 
             break
 
         else:
 
-            print("\nInvalid choice. Please enter 1-6.")
-
+            print("\nInvalid choice. Please enter 1-10.")
 
 # 26. Main Menu
 
