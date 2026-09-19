@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 import matplotlib.pyplot as plt
 import seaborn as sns
+import time
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -12,6 +13,7 @@ from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier 
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.naive_bayes import GaussianNB 
+from sklearn.model_selection import cross_val_score
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
@@ -579,6 +581,238 @@ xgb_cm = confusion_matrix(
     xgb_predictions
 )
 
+# 33. ROC-AUC Evaluation
+
+logistic_auc = roc_auc_score(
+    y_test,
+    model.predict_proba(X_test_scaled)[:, 1]
+)
+
+rf_auc = roc_auc_score(
+    y_test,
+    rf_model.predict_proba(X_test)[:, 1]
+)
+
+dt_auc = roc_auc_score(
+    y_test,
+    dt_model.predict_proba(X_test)[:, 1]
+)
+
+svm_auc = roc_auc_score(
+    y_test,
+    svm_model.decision_function(X_test_scaled)
+)
+
+knn_auc = roc_auc_score(
+    y_test,
+    knn_model.predict_proba(X_test_scaled)[:, 1]
+)
+
+gb_auc = roc_auc_score(
+    y_test,
+    gb_model.predict_proba(X_test)[:, 1]
+)
+
+nb_auc = roc_auc_score(
+    y_test,
+    nb_model.predict_proba(X_test)[:, 1]
+)
+
+xgb_auc = roc_auc_score(
+    y_test,
+    xgb_model.predict_proba(X_test)[:, 1]
+)
+
+print("\n========================================")
+print("           ROC-AUC SCORES")
+print("========================================")
+
+print(f"Logistic Regression:      {logistic_auc:.4f}")
+print(f"Random Forest:            {rf_auc:.4f}")
+print(f"Decision Tree:             {dt_auc:.4f}")
+print(f"Support Vector Machine:   {svm_auc:.4f}")
+print(f"K-Nearest Neighbors:      {knn_auc:.4f}")
+print(f"Gradient Boosting:        {gb_auc:.4f}")
+print(f"Gaussian Naive Bayes:     {nb_auc:.4f}")
+print(f"XGBoost:                  {xgb_auc:.4f}")
+
+def cross_validation_analysis():
+
+    models = {
+        "Logistic Regression": LogisticRegression(max_iter=1000),
+        "Random Forest": RandomForestClassifier(
+            n_estimators=100,
+            random_state=42,
+            n_jobs=-1
+        ),
+        "Decision Tree": DecisionTreeClassifier(
+            random_state=42
+        ),
+        "Support Vector Machine": SVC(
+            random_state=42
+        ),
+        "K-Nearest Neighbors": KNeighborsClassifier(
+            n_neighbors=5
+        ),
+        "Gradient Boosting": GradientBoostingClassifier(
+            random_state=42
+        ),
+        "Gaussian Naive Bayes": GaussianNB(),
+        "XGBoost": XGBClassifier(
+            n_estimators=100,
+            random_state=42,
+            eval_metric="logloss"
+        )
+    }
+
+    print("\n========================================")
+    print("       5-FOLD CROSS-VALIDATION")
+    print("========================================")
+
+    for name, cv_model in models.items():
+
+        if name in [
+            "Logistic Regression",
+            "Support Vector Machine",
+            "K-Nearest Neighbors"
+        ]:
+            scores = cross_val_score(
+                cv_model,
+                X_train_scaled,
+                y_train,
+                cv=5,
+                scoring="accuracy"
+            )
+
+        else:
+            scores = cross_val_score(
+                cv_model,
+                X_train,
+                y_train,
+                cv=5,
+                scoring="accuracy"
+            )
+
+        print(f"\n{name}")
+        print(f"Fold Scores: {scores}")
+        print(f"Mean Accuracy: {scores.mean():.4f}")
+        print(f"Standard Deviation: {scores.std():.4f}")
+
+def model_time_comparison():
+
+    models = {
+        "Logistic Regression": (
+            LogisticRegression(max_iter=1000),
+            X_train_scaled,
+            X_test_scaled
+        ),
+
+        "Random Forest": (
+            RandomForestClassifier(
+                n_estimators=100,
+                random_state=42,
+                n_jobs=-1
+            ),
+            X_train,
+            X_test
+        ),
+
+        "Decision Tree": (
+            DecisionTreeClassifier(
+                random_state=42
+            ),
+            X_train,
+            X_test
+        ),
+
+        "Support Vector Machine": (
+            SVC(
+                random_state=42
+            ),
+            X_train_scaled,
+            X_test_scaled
+        ),
+
+        "K-Nearest Neighbors": (
+            KNeighborsClassifier(
+                n_neighbors=5
+            ),
+            X_train_scaled,
+            X_test_scaled
+        ),
+
+        "Gradient Boosting": (
+            GradientBoostingClassifier(
+                random_state=42
+            ),
+            X_train,
+            X_test
+        ),
+
+        "Gaussian Naive Bayes": (
+            GaussianNB(),
+            X_train,
+            X_test
+        ),
+
+        "XGBoost": (
+            XGBClassifier(
+                n_estimators=100,
+                random_state=42,
+                eval_metric="logloss"
+            ),
+            X_train,
+            X_test
+        )
+    }
+
+    results = []
+
+    print("\n========================================")
+    print("       MODEL TIME COMPARISON")
+    print("========================================")
+
+    for name, (timed_model, train_data, test_data) in models.items():
+
+        start_time = time.perf_counter()
+
+        timed_model.fit(
+            train_data,
+            y_train
+        )
+
+        training_time = time.perf_counter() - start_time
+
+        start_time = time.perf_counter()
+
+        timed_model.predict(
+            test_data
+        )
+
+        prediction_time = time.perf_counter() - start_time
+
+        results.append({
+            "Model": name,
+            "Training Time (s)": training_time,
+            "Prediction Time (s)": prediction_time
+        })
+
+    time_results = pd.DataFrame(results)
+
+    print(
+        time_results.to_string(
+            index=False,
+            formatters={
+                "Training Time (s)": "{:.4f}".format,
+                "Prediction Time (s)": "{:.4f}".format
+            }
+        )
+    )
+
+    return time_results
+
+
+
 # 23. Visualization functions
 
 def resistance_distribution():
@@ -759,6 +993,240 @@ def random_forest_importance():
     plt.show()
 
 
+def confusion_matrix_menu():
+
+    while True:
+
+        print("\n========================================")
+        print("        CONFUSION MATRICES")
+        print("========================================")
+        print("[1] Logistic Regression")
+        print("[2] Random Forest")
+        print("[3] Decision Tree")
+        print("[4] Support Vector Machine")
+        print("[5] K-Nearest Neighbors")
+        print("[6] Gradient Boosting")
+        print("[7] Gaussian Naive Bayes")
+        print("[8] XGBoost")
+        print("[9] Back")
+
+        choice = input("\nEnter your choice: ").strip()
+
+        if choice == "1":
+            plot_confusion_matrix(
+                logistic_cm,
+                "Logistic Regression Confusion Matrix"
+            )
+
+        elif choice == "2":
+            plot_confusion_matrix(
+                rf_cm,
+                "Random Forest Confusion Matrix"
+            )
+
+        elif choice == "3":
+            plot_confusion_matrix(
+                dt_cm,
+                "Decision Tree Confusion Matrix"
+            )
+
+        elif choice == "4":
+            plot_confusion_matrix(
+                svm_cm,
+                "Support Vector Machine Confusion Matrix"
+            )
+
+        elif choice == "5":
+            plot_confusion_matrix(
+                knn_cm,
+                "K-Nearest Neighbors Confusion Matrix"
+            )
+
+        elif choice == "6":
+            plot_confusion_matrix(
+                gb_cm,
+                "Gradient Boosting Confusion Matrix"
+            )
+
+        elif choice == "7":
+            plot_confusion_matrix(
+                nb_cm,
+                "Gaussian Naive Bayes Confusion Matrix"
+            )
+
+        elif choice == "8":
+            plot_confusion_matrix(
+                xgb_cm,
+                "XGBoost Confusion Matrix"
+            )
+
+        elif choice == "9":
+            break
+
+        else:
+            print("\nInvalid choice. Please enter 1-9.")
+
+
+def feature_analysis_menu():
+
+    while True:
+
+        print("\n========================================")
+        print("          FEATURE ANALYSIS")
+        print("========================================")
+        print("[1] Random Forest Importance")
+        print("[2] Decision Tree Importance")
+        print("[3] Gradient Boosting Importance")
+        print("[4] XGBoost Importance")
+        print("[5] Logistic Regression Coefficients")
+        print("[6] Back")
+
+        choice = input("\nEnter your choice: ").strip()
+
+        if choice == "1":
+
+            print("\n========================================")
+            print("       RANDOM FOREST IMPORTANCE")
+            print("========================================")
+
+            importance = pd.Series(
+                rf_model.feature_importances_,
+                index=X.columns
+            ).sort_values(ascending=False)
+
+            print("\nFeature Importance:")
+            print(importance)
+
+            plt.figure(figsize=(10, 6))
+
+            importance.sort_values().plot(
+                kind="barh"
+            )
+
+            plt.title("Random Forest Feature Importance")
+            plt.xlabel("Importance")
+            plt.ylabel("Feature")
+
+            plt.tight_layout()
+            plt.show()
+
+        elif choice == "2":
+
+            print("\n========================================")
+            print("        DECISION TREE IMPORTANCE")
+            print("========================================")
+
+            importance = pd.Series(
+                dt_model.feature_importances_,
+                index=X.columns
+            ).sort_values(ascending=False)
+
+            print("\nFeature Importance:")
+            print(importance)
+
+            plt.figure(figsize=(10, 6))
+
+            importance.sort_values().plot(
+                kind="barh"
+            )
+
+            plt.title("Decision Tree Feature Importance")
+            plt.xlabel("Importance")
+            plt.ylabel("Feature")
+
+            plt.tight_layout()
+            plt.show()
+
+        elif choice == "3":
+
+            print("\n========================================")
+            print("      GRADIENT BOOSTING IMPORTANCE")
+            print("========================================")
+
+            importance = pd.Series(
+                gb_model.feature_importances_,
+                index=X.columns
+            ).sort_values(ascending=False)
+
+            print("\nFeature Importance:")
+            print(importance)
+
+            plt.figure(figsize=(10, 6))
+
+            importance.sort_values().plot(
+                kind="barh"
+            )
+
+            plt.title("Gradient Boosting Feature Importance")
+            plt.xlabel("Importance")
+            plt.ylabel("Feature")
+
+            plt.tight_layout()
+            plt.show()
+
+        elif choice == "4":
+
+            print("\n========================================")
+            print("          XGBOOST IMPORTANCE")
+            print("========================================")
+
+            importance = pd.Series(
+                xgb_model.feature_importances_,
+                index=X.columns
+            ).sort_values(ascending=False)
+
+            print("\nFeature Importance:")
+            print(importance)
+
+            plt.figure(figsize=(10, 6))
+
+            importance.sort_values().plot(
+                kind="barh"
+            )
+
+            plt.title("XGBoost Feature Importance")
+            plt.xlabel("Importance")
+            plt.ylabel("Feature")
+
+            plt.tight_layout()
+            plt.show()
+
+        elif choice == "5":
+
+            print("\n========================================")
+            print("     LOGISTIC REGRESSION COEFFICIENTS")
+            print("========================================")
+
+            coefficients = pd.Series(
+                model.coef_[0],
+                index=X.columns
+            ).sort_values()
+
+            print("\nFeature Coefficients:")
+            print(coefficients)
+
+            plt.figure(figsize=(10, 6))
+
+            coefficients.plot(
+                kind="barh"
+            )
+
+            plt.title("Logistic Regression Feature Coefficients")
+            plt.xlabel("Coefficient")
+            plt.ylabel("Feature")
+
+            plt.tight_layout()
+            plt.show()
+
+        elif choice == "6":
+
+            break
+
+        else:
+
+            print("\nInvalid choice. Please enter 1-6.")
+
+
 # 24. Visualization Menu
 
 def visualization_menu():
@@ -773,87 +1241,47 @@ def visualization_menu():
         print("[3] GC Content Distribution")
         print("[4] Feature Correlation Heatmap")
         print("[5] Resistant vs Susceptible Features")
-        print("[6] Logistic Regression Confusion Matrix")
-        print("[7] Random Forest Confusion Matrix")
-        print("[8] Decision Tree Confusion Matrix")
-        print("[9] Support Vector Machine Confusion Matrix")
-        print("[10] K-Nearest Neighbors Confusion Matrix")
-        print("[11] Gradient Boosting Confusion Matrix")
-        print("[12] Gaussian Naive Bayes Confusion Matrix")
-        print("[13] XGBoost Confusion Matrix")
-        print("[14] Back")
+        print("[6] Confusion Matrices")
+        print("[7] Model Comparison Graphs")
+        print("[8] Back")
 
         choice = input("\nEnter your choice: ").strip()
 
         if choice == "1":
+
             resistance_distribution()
 
         elif choice == "2":
+
             genome_length_distribution()
 
         elif choice == "3":
+
             gc_content_distribution()
 
         elif choice == "4":
+
             correlation_heatmap()
 
         elif choice == "5":
+
             feature_comparison()
 
         elif choice == "6":
-            plot_confusion_matrix(
-                logistic_cm,
-                "Logistic Regression Confusion Matrix"
-            )
+
+            confusion_matrix_menu()
 
         elif choice == "7":
-            plot_confusion_matrix(
-                rf_cm,
-                "Random Forest Confusion Matrix"
-            )
+
+            model_comparison_graphs()
 
         elif choice == "8":
-            plot_confusion_matrix(
-                dt_cm,
-                "Decision Tree Confusion Matrix"
-            )
 
-        elif choice == "9":
-            plot_confusion_matrix(
-                svm_cm,
-                "Support Vector Machine Confusion Matrix"
-            )
-
-        elif choice == "10":
-            plot_confusion_matrix(
-                knn_cm,
-                "K-Nearest Neighbors Confusion Matrix"
-            )
-
-        elif choice == "11":
-            plot_confusion_matrix(
-                gb_cm,
-                "Gradient Boosting Confusion Matrix"
-            )
-
-        elif choice == "12":
-            plot_confusion_matrix(
-                nb_cm,
-                "Gaussian Naive Bayes Confusion Matrix"
-            )
-
-        elif choice == "13":
-            plot_confusion_matrix(
-                xgb_cm,
-                "XGBoost Confusion Matrix"
-            )
-
-        elif choice == "14":
             break
 
         else:
-            print("\nInvalid choice. Please enter 1-14.")
 
+            print("\nInvalid choice. Please enter 1-8.")
 
 def compare_models():
 
@@ -980,6 +1408,17 @@ def compare_models():
             classification_report(
                 y_test, xgb_predictions, output_dict=True
             )["weighted avg"]["f1-score"]
+        ],
+
+        "ROC-AUC": [
+            logistic_auc,
+            rf_auc,
+            dt_auc,
+            svm_auc,
+            knn_auc,
+            gb_auc,
+            nb_auc,
+            xgb_auc
         ]
     })
 
@@ -994,10 +1433,106 @@ def compare_models():
                 "Accuracy": "{:.2%}".format,
                 "Precision": "{:.2%}".format,
                 "Recall": "{:.2%}".format,
-                "F1 Score": "{:.2%}".format
+                "F1 Score": "{:.2%}".format,
+                "ROC-AUC": "{:.4f}".format
             }
         )
     )
+
+def model_comparison_graphs():
+
+    models = [
+        "Logistic Regression",
+        "Random Forest",
+        "Decision Tree",
+        "Support Vector Machine",
+        "K-Nearest Neighbors",
+        "Gradient Boosting",
+        "Gaussian Naive Bayes",
+        "XGBoost"
+    ]
+
+    accuracy_scores = [
+        accuracy_score(y_test, y_pred),
+        accuracy_score(y_test, rf_predictions),
+        accuracy_score(y_test, dt_predictions),
+        accuracy_score(y_test, svm_predictions),
+        accuracy_score(y_test, knn_predictions),
+        accuracy_score(y_test, gb_predictions),
+        accuracy_score(y_test, nb_predictions),
+        accuracy_score(y_test, xgb_predictions)
+    ]
+
+    precision_scores = [
+        classification_report(y_test, y_pred, output_dict=True)["weighted avg"]["precision"],
+        classification_report(y_test, rf_predictions, output_dict=True)["weighted avg"]["precision"],
+        classification_report(y_test, dt_predictions, output_dict=True)["weighted avg"]["precision"],
+        classification_report(y_test, svm_predictions, output_dict=True)["weighted avg"]["precision"],
+        classification_report(y_test, knn_predictions, output_dict=True)["weighted avg"]["precision"],
+        classification_report(y_test, gb_predictions, output_dict=True)["weighted avg"]["precision"],
+        classification_report(y_test, nb_predictions, output_dict=True)["weighted avg"]["precision"],
+        classification_report(y_test, xgb_predictions, output_dict=True)["weighted avg"]["precision"]
+    ]
+
+    recall_scores = [
+        classification_report(y_test, y_pred, output_dict=True)["weighted avg"]["recall"],
+        classification_report(y_test, rf_predictions, output_dict=True)["weighted avg"]["recall"],
+        classification_report(y_test, dt_predictions, output_dict=True)["weighted avg"]["recall"],
+        classification_report(y_test, svm_predictions, output_dict=True)["weighted avg"]["recall"],
+        classification_report(y_test, knn_predictions, output_dict=True)["weighted avg"]["recall"],
+        classification_report(y_test, gb_predictions, output_dict=True)["weighted avg"]["recall"],
+        classification_report(y_test, nb_predictions, output_dict=True)["weighted avg"]["recall"],
+        classification_report(y_test, xgb_predictions, output_dict=True)["weighted avg"]["recall"]
+    ]
+
+    f1_scores = [
+        classification_report(y_test, y_pred, output_dict=True)["weighted avg"]["f1-score"],
+        classification_report(y_test, rf_predictions, output_dict=True)["weighted avg"]["f1-score"],
+        classification_report(y_test, dt_predictions, output_dict=True)["weighted avg"]["f1-score"],
+        classification_report(y_test, svm_predictions, output_dict=True)["weighted avg"]["f1-score"],
+        classification_report(y_test, knn_predictions, output_dict=True)["weighted avg"]["f1-score"],
+        classification_report(y_test, gb_predictions, output_dict=True)["weighted avg"]["f1-score"],
+        classification_report(y_test, nb_predictions, output_dict=True)["weighted avg"]["f1-score"],
+        classification_report(y_test, xgb_predictions, output_dict=True)["weighted avg"]["f1-score"]
+    ]
+
+    auc_scores = [
+        logistic_auc,
+        rf_auc,
+        dt_auc,
+        svm_auc,
+        knn_auc,
+        gb_auc,
+        nb_auc,
+        xgb_auc
+    ]
+
+    metrics = {
+        "Accuracy": accuracy_scores,
+        "Precision": precision_scores,
+        "Recall": recall_scores,
+        "F1 Score": f1_scores,
+        "ROC-AUC": auc_scores
+    }
+
+    for metric, scores in metrics.items():
+
+        plt.figure(figsize=(10, 6))
+
+        plt.bar(models, scores)
+
+        plt.title(f"Model Comparison - {metric}")
+        plt.xlabel("Model")
+        plt.ylabel(metric)
+
+        plt.xticks(
+            rotation=45,
+            ha="right"
+        )
+
+        plt.tight_layout()
+        plt.show()
+
 
 # 25. View Internal Messages
 
@@ -1029,7 +1564,9 @@ def model_menu():
         print("[7] Gaussian Naive Bayes")
         print("[8] XGBoost")
         print("[9] Compare Models")
-        print("[10] Back")
+        print("[10] Cross-Validation")
+        print("[11] Model Time Comparison")
+        print("[12] Back")
 
         choice = input("\nEnter your choice: ").strip()
 
@@ -1040,8 +1577,10 @@ def model_menu():
             print("========================================")
 
             print(f"\nAccuracy: {accuracy:.2%}")
+
             print("\nClassification Report:")
             print(logistic_report)
+
             print("\nConfusion Matrix:")
             print(logistic_cm)
 
@@ -1052,8 +1591,10 @@ def model_menu():
             print("========================================")
 
             print(f"\nAccuracy: {rf_accuracy:.2%}")
+
             print("\nClassification Report:")
             print(rf_report)
+
             print("\nConfusion Matrix:")
             print(rf_cm)
 
@@ -1064,8 +1605,10 @@ def model_menu():
             print("========================================")
 
             print(f"\nAccuracy: {dt_accuracy:.2%}")
+
             print("\nClassification Report:")
             print(dt_report)
+
             print("\nConfusion Matrix:")
             print(dt_cm)
 
@@ -1076,8 +1619,10 @@ def model_menu():
             print("========================================")
 
             print(f"\nAccuracy: {svm_accuracy:.2%}")
+
             print("\nClassification Report:")
             print(svm_report)
+
             print("\nConfusion Matrix:")
             print(svm_cm)
 
@@ -1088,8 +1633,10 @@ def model_menu():
             print("========================================")
 
             print(f"\nAccuracy: {knn_accuracy:.2%}")
+
             print("\nClassification Report:")
             print(knn_report)
+
             print("\nConfusion Matrix:")
             print(knn_cm)
 
@@ -1100,8 +1647,10 @@ def model_menu():
             print("========================================")
 
             print(f"\nAccuracy: {gb_accuracy:.2%}")
+
             print("\nClassification Report:")
             print(gb_report)
+
             print("\nConfusion Matrix:")
             print(gb_cm)
 
@@ -1112,8 +1661,10 @@ def model_menu():
             print("========================================")
 
             print(f"\nAccuracy: {nb_accuracy:.2%}")
+
             print("\nClassification Report:")
             print(nb_report)
+
             print("\nConfusion Matrix:")
             print(nb_cm)
 
@@ -1124,8 +1675,10 @@ def model_menu():
             print("========================================")
 
             print(f"\nAccuracy: {xgb_accuracy:.2%}")
+
             print("\nClassification Report:")
             print(xgb_report)
+
             print("\nConfusion Matrix:")
             print(xgb_cm)
 
@@ -1135,11 +1688,17 @@ def model_menu():
 
         elif choice == "10":
 
-            break
+            cross_validation_analysis()
+
+        elif choice == "11":
+            model_time_comparison() 
+
+        elif choice == "12":
+            break            
 
         else:
 
-            print("\nInvalid choice. Please enter 1-10.")
+            print("\nInvalid choice. Please enter 1-12.")
 
 # 26. Main Menu
 
@@ -1152,7 +1711,7 @@ while True:
     print("========================================")
     print("[1] Machine Learning Models")
     print("[2] Visualize Dataset")
-    print("[3] Feature Importance")
+    print("[3] Feature Analysis")
     print("[4] View Internal Messages")
     print("[5] Exit")
 
@@ -1168,11 +1727,7 @@ while True:
 
     elif choice == "3":
 
-        print("\n========================================")
-        print("       RANDOM FOREST FEATURE IMPORTANCE")
-        print("========================================")
-
-        random_forest_importance()
+        feature_analysis_menu()
 
     elif choice == "4":
 
@@ -1186,3 +1741,4 @@ while True:
     else:
 
         print("\nInvalid choice. Please enter 1-5.")
+
