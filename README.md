@@ -1,24 +1,20 @@
 # Ciprofloxacin Resistance ML Study
 
-A comparative machine learning study investigating whether genome-level features can be used to classify bacterial genomes as **ciprofloxacin-resistant** or **ciprofloxacin-susceptible**.
+A comparative machine learning study investigating whether broad genome-level features can be used to classify bacterial genomes as **ciprofloxacin-resistant** or **ciprofloxacin-susceptible**.
 
-The project compares multiple machine learning algorithms and evaluates their performance using several classification metrics, cross-validation, feature analysis, visualizations, and computational-time measurements.
-
----
+The project compares multiple classification algorithms using standard evaluation metrics, cross-validation, feature analysis, visualizations, and computational-time measurements.
 
 ## Research Question
 
 > **How do different machine learning algorithms compare in classifying ciprofloxacin-resistant and ciprofloxacin-susceptible bacterial genomes using genome-level features?**
 
----
-
 ## Project Overview
 
 Antimicrobial resistance (AMR) is an important challenge in microbiology and infectious disease research.
 
-This project investigates whether broad genomic characteristics can provide useful information for distinguishing bacterial genomes associated with ciprofloxacin resistance.
+This project explores whether broad genomic characteristics can provide useful information for distinguishing bacterial genomes associated with ciprofloxacin resistance.
 
-Rather than focusing on a single machine learning algorithm, the project performs a **comparative study of eight classification models**.
+Rather than focusing on a single machine learning algorithm, the study performs a **comparative evaluation of eight classification models** using the same dataset and feature set.
 
 The workflow includes:
 
@@ -29,18 +25,14 @@ The workflow includes:
 5. Creating resistant/susceptible labels
 6. Training multiple machine learning models
 7. Evaluating model performance
-8. Performing cross-validation
+8. Performing 5-fold cross-validation
 9. Comparing computational time
-10. Analyzing feature importance
-11. Visualizing the dataset and model results
-
----
+10. Analysing feature importance
+11. Visualising the dataset and model results
 
 ## Dataset
 
-The phenotype data was obtained from the **Bacterial and Viral Bioinformatics Resource Center (BV-BRC)**.
-
-The study focuses on:
+Phenotype data was obtained from the **Bacterial and Viral Bioinformatics Resource Center (BV-BRC)**.
 
 **Antibiotic:** Ciprofloxacin
 
@@ -59,25 +51,23 @@ After cleaning:
 | Susceptible |      9,926 |
 | **Total**   | **19,466** |
 
-The dataset was cleaned by:
+The dataset preparation included:
 
 * Removing genomes appearing in both phenotype groups
 * Removing duplicate genome records
 * Matching phenotype information with genome-level information
 * Handling missing numerical feature values
 
----
+## Genome-Level Features
 
-## Genome Features
-
-The models currently use the following genome-level features:
+The models currently use the following features:
 
 * Genome length
 * GC content
 * CDS
 * rRNA
 * tRNA
-* Contigs
+* Number of contigs
 * Contig N50
 * Contig L50
 * Hypothetical CDS
@@ -85,7 +75,7 @@ The models currently use the following genome-level features:
 * CheckM completeness
 * CheckM contamination
 
-The `genome_id` is used to connect datasets but is not used as a predictive feature.
+The `genome_id` is used to connect datasets but is **not used as a predictive feature**.
 
 ### Target Variable
 
@@ -96,45 +86,41 @@ The resistance phenotype is encoded as:
 1 = Resistant
 ```
 
----
-
 ## Machine Learning Models
 
-Eight classification algorithms are currently compared:
+Eight classification algorithms are compared.
 
-### 1. Logistic Regression
+### Logistic Regression
 
-A linear classification model used as a baseline approach.
+A linear classification model used as a baseline.
 
-### 2. Random Forest
+### Random Forest
 
-An ensemble of decision trees used to capture nonlinear relationships between genomic features and resistance.
+An ensemble of decision trees used to model nonlinear relationships between genomic features and resistance classification.
 
-### 3. Decision Tree
+### Decision Tree
 
-A tree-based classification model that provides an interpretable decision structure.
+A tree-based model that provides an interpretable decision structure.
 
-### 4. Support Vector Machine
+### Support Vector Machine
 
-A classification algorithm used to separate the two phenotype groups in feature space.
+A classification algorithm that separates observations within feature space.
 
-### 5. K-Nearest Neighbors
+### K-Nearest Neighbors
 
-A distance-based classification algorithm that predicts the class based on nearby observations.
+A distance-based classifier that predicts classes using nearby observations.
 
-### 6. Gradient Boosting
+### Gradient Boosting
 
 An ensemble method that builds sequential decision trees to improve classification performance.
 
-### 7. Gaussian Naive Bayes
+### Gaussian Naive Bayes
 
 A probabilistic classification method based on Bayes' theorem.
 
-### 8. XGBoost
+### XGBoost
 
-A gradient-boosted tree algorithm included for comparison with the other classification approaches.
-
----
+A gradient-boosted tree implementation included for comparison with the other classification approaches.
 
 ## Model Evaluation
 
@@ -149,9 +135,9 @@ The models are evaluated using:
 
 ### Cross-Validation
 
-A **5-fold cross-validation** analysis is included to examine model performance across multiple training subsets.
+A **5-fold cross-validation** analysis is used to examine model performance across multiple training subsets.
 
-For each model, the following are recorded:
+For each model, the study records:
 
 * Fold accuracy scores
 * Mean accuracy
@@ -159,15 +145,13 @@ For each model, the following are recorded:
 
 ### Computational Performance
 
-Training and prediction times are also measured for each model.
+Training and prediction times are measured for each model.
 
-This allows the study to compare not only predictive performance but also computational requirements.
-
----
+This provides an additional comparison of computational requirements alongside classification performance.
 
 ## Feature Analysis
 
-Feature analysis is included to investigate which genomic variables contribute most strongly to model predictions.
+Feature analysis is used to examine which genomic variables contribute most strongly to model predictions.
 
 The project currently supports:
 
@@ -177,13 +161,9 @@ The project currently supports:
 * XGBoost feature importance
 * Logistic Regression coefficients
 
-These analyses can help identify genomic characteristics associated with the model's classification decisions.
-
----
+These analyses describe which genomic features are most influential in the models' classification decisions.
 
 ## Visualizations
-
-The program includes several visualization options.
 
 ### Dataset Visualizations
 
@@ -202,31 +182,25 @@ The program includes several visualization options.
 * F1-score comparison
 * ROC-AUC comparison
 
----
-
 ## Project Structure
 
 ```text
 Ciprofloxacin-Resistance-ML-Study/
-│
 ├── data/
 │   ├── ciprofloxacin_resistant.csv
 │   ├── ciprofloxacin_susceptible.csv
 │   ├── feature_data.csv
 │   └── genome_features.csv
-│
 ├── main.py
 ├── README.md
 └── Research_Study.md
 ```
 
-> The exact contents of the `data/` directory may vary depending on whether genome data has already been downloaded locally.
-
----
+The exact contents of the `data/` directory may vary depending on whether genome data has already been downloaded locally.
 
 ## Program Features
 
-The program provides a menu-driven interface with the following main sections:
+The program provides a menu-driven interface.
 
 ```text
 CIPROFLOXACIN RESISTANCE ML STUDY
@@ -251,7 +225,7 @@ It also provides:
 
 * Model comparison
 * 5-fold cross-validation
-* Model training/prediction time comparison
+* Model training and prediction time comparison
 
 ### Visualization
 
@@ -263,9 +237,7 @@ The feature analysis menu provides model-specific feature importance and coeffic
 
 ### Internal Messages
 
-Internal processing information is stored separately so that dataset preparation and API-related messages do not clutter the main program interface.
-
----
+Processing information is stored separately so that dataset preparation and API-related messages do not clutter the main program interface.
 
 ## Data Processing Workflow
 
@@ -328,17 +300,16 @@ Feature Analysis
 Model Comparison
 ```
 
----
+## Technologies
 
-## Technologies Used
-
-### Programming Language
+### Programming
 
 * Python
 
 ### Libraries
 
 * pandas
+* NumPy
 * requests
 * matplotlib
 * seaborn
@@ -349,7 +320,24 @@ Model Comparison
 
 * BV-BRC
 
----
+## What I Learned
+
+This project extended the sequence-analysis and computational genomics concepts from the previous projects into machine learning.
+
+Key concepts included:
+
+* Preparing biological datasets for machine learning
+* Working with phenotype and genome-level data
+* Feature selection and preprocessing
+* Binary classification
+* Comparing multiple machine learning algorithms
+* Cross-validation
+* Classification metrics
+* Confusion matrix analysis
+* Feature importance and model coefficients
+* Data visualization
+* Measuring computational performance
+* Documenting a reproducible computational study
 
 ## Limitations
 
@@ -357,15 +345,13 @@ This project currently uses broad genome-level characteristics rather than speci
 
 Therefore, the models may identify associations between genomic composition and resistance classification without identifying the biological mechanism responsible for ciprofloxacin resistance.
 
-The dataset also contains multiple bacterial species. Differences in genome structure and composition between species may influence the classification results.
+The dataset contains multiple bacterial species. Differences in genome structure and composition between species may influence the classification results.
 
 The dataset is based on publicly available records and may not represent all bacterial populations or geographic regions.
 
 Model performance on this dataset should not automatically be interpreted as performance on an independent external dataset.
 
 Phenotype classifications originate from the underlying public database and may reflect differences in testing conditions, standards, and measurement procedures.
-
----
 
 ## Research Documentation
 
@@ -393,20 +379,20 @@ The research document contains:
 
 The results and conclusions in the research document will be updated using the final experimental outputs.
 
----
-
 ## Purpose
 
-This project was developed as a **bioinformatics and machine learning study** to explore the intersection of bacterial genomics, antimicrobial resistance, and predictive modeling.
+This project was developed as a **bioinformatics and machine learning study** exploring the intersection of bacterial genomics, antimicrobial resistance, and predictive modelling.
 
-The main goal is not simply to build a resistance classifier, but to investigate how different machine learning approaches behave when applied to the same genomic dataset.
+The primary objective is to compare how different machine learning approaches behave when applied to the same genomic dataset and feature set.
 
----
+## Project Series
 
-## Author
+Part of a series of progressively more advanced bioinformatics and computational biology projects.
 
-**Hamdan Sajith**
+**Project 1:** DNA Sequencing Toolkit — Fundamental DNA sequence operations
+**Project 2:** Protein Sequence Analyzer — Protein sequence and physicochemical analysis
+**Project 3:** DNA Sequence Analyzer — Comparative DNA sequence analysis
+**Project 4:** Bacterial Genome Analysis Tool — Genome-scale sequence analysis and visualization
+**Project 5:** Ciprofloxacin Resistance ML Study — Machine learning applied to bacterial genomic data
 
-Bioinformatics / Machine Learning Project
-
----
+The project series progresses from fundamental sequence processing to comparative analysis, genome-scale analysis, and machine learning for biological data.
