@@ -117,7 +117,7 @@ log_message(
 
 # 5. Get unique Genome IDs
 
-genome_ids = list(
+genome_ids = sorted(
     set(resistant_data["Genome ID"]) |
     set(susceptible_data["Genome ID"])
 )
@@ -627,18 +627,6 @@ xgb_auc = roc_auc_score(
     xgb_model.predict_proba(X_test)[:, 1]
 )
 
-print("\n========================================")
-print("           ROC-AUC SCORES")
-print("========================================")
-
-print(f"Logistic Regression:      {logistic_auc:.4f}")
-print(f"Random Forest:            {rf_auc:.4f}")
-print(f"Decision Tree:             {dt_auc:.4f}")
-print(f"Support Vector Machine:   {svm_auc:.4f}")
-print(f"K-Nearest Neighbors:      {knn_auc:.4f}")
-print(f"Gradient Boosting:        {gb_auc:.4f}")
-print(f"Gaussian Naive Bayes:     {nb_auc:.4f}")
-print(f"XGBoost:                  {xgb_auc:.4f}")
 
 def cross_validation_analysis():
 
@@ -701,6 +689,7 @@ def cross_validation_analysis():
         print(f"Fold Scores: {scores}")
         print(f"Mean Accuracy: {scores.mean():.4f}")
         print(f"Standard Deviation: {scores.std():.4f}")
+
 
 def model_time_comparison():
 
@@ -814,7 +803,6 @@ def model_time_comparison():
     )
 
     return time_results
-
 
 
 # 23. Visualization functions
@@ -971,27 +959,6 @@ def plot_confusion_matrix(cm, title):
     plt.title(title)
     plt.xlabel("Predicted")
     plt.ylabel("Actual")
-
-    plt.tight_layout()
-    plt.show()
-
-
-def random_forest_importance():
-    """Display Random Forest feature importance."""
-
-    importance = pd.Series(
-        rf_model.feature_importances_,
-        index=X.columns
-    ).sort_values(ascending=True)
-
-    plt.figure(figsize=(9, 6))
-
-    importance.plot(
-        kind="barh"
-    )
-
-    plt.title("Random Forest Feature Importance")
-    plt.xlabel("Importance")
 
     plt.tight_layout()
     plt.show()
@@ -1287,6 +1254,7 @@ def visualization_menu():
 
             print("\nInvalid choice. Please enter 1-8.")
 
+
 def compare_models():
 
     comparison = pd.DataFrame({
@@ -1443,6 +1411,7 @@ def compare_models():
         )
     )
 
+
 def model_comparison_graphs():
 
     models = [
@@ -1581,6 +1550,7 @@ def model_menu():
             print("========================================")
 
             print(f"\nAccuracy: {accuracy:.2%}")
+            print(f"ROC-AUC: {logistic_auc:.4f}")
 
             print("\nClassification Report:")
             print(logistic_report)
@@ -1595,6 +1565,7 @@ def model_menu():
             print("========================================")
 
             print(f"\nAccuracy: {rf_accuracy:.2%}")
+            print(f"ROC-AUC: {rf_auc:.4f}")
 
             print("\nClassification Report:")
             print(rf_report)
@@ -1609,6 +1580,7 @@ def model_menu():
             print("========================================")
 
             print(f"\nAccuracy: {dt_accuracy:.2%}")
+            print(f"ROC-AUC: {dt_auc:.4f}")
 
             print("\nClassification Report:")
             print(dt_report)
@@ -1623,6 +1595,7 @@ def model_menu():
             print("========================================")
 
             print(f"\nAccuracy: {svm_accuracy:.2%}")
+            print(f"ROC-AUC: {svm_auc:.4f}")
 
             print("\nClassification Report:")
             print(svm_report)
@@ -1637,6 +1610,7 @@ def model_menu():
             print("========================================")
 
             print(f"\nAccuracy: {knn_accuracy:.2%}")
+            print(f"ROC-AUC: {knn_auc:.4f}")
 
             print("\nClassification Report:")
             print(knn_report)
@@ -1651,6 +1625,7 @@ def model_menu():
             print("========================================")
 
             print(f"\nAccuracy: {gb_accuracy:.2%}")
+            print(f"ROC-AUC: {gb_auc:.4f}")
 
             print("\nClassification Report:")
             print(gb_report)
@@ -1665,6 +1640,7 @@ def model_menu():
             print("========================================")
 
             print(f"\nAccuracy: {nb_accuracy:.2%}")
+            print(f"ROC-AUC: {nb_auc:.4f}")
 
             print("\nClassification Report:")
             print(nb_report)
@@ -1679,6 +1655,7 @@ def model_menu():
             print("========================================")
 
             print(f"\nAccuracy: {xgb_accuracy:.2%}")
+            print(f"ROC-AUC: {xgb_auc:.4f}")
 
             print("\nClassification Report:")
             print(xgb_report)
@@ -1703,6 +1680,7 @@ def model_menu():
         else:
 
             print("\nInvalid choice. Please enter 1-12.")
+
 
 # 26. Main Menu
 
@@ -1745,4 +1723,3 @@ while True:
     else:
 
         print("\nInvalid choice. Please enter 1-5.")
-
