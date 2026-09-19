@@ -3,6 +3,10 @@ import requests
 import matplotlib.pyplot as plt
 import seaborn as sns
 import time
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -56,12 +60,12 @@ print("\nPreparing dataset and training models...")
 # 1. Load phenotype data
 
 resistant_data = pd.read_csv(
-    "Bacterial-Antibiotic-Resistance-Predictor/data/ciprofloxacin_resistant.csv",
+    DATA_DIR / "ciprofloxacin_resistant.csv",
     dtype={"Genome ID": str}
 )
 
 susceptible_data = pd.read_csv(
-    "Bacterial-Antibiotic-Resistance-Predictor/data/ciprofloxacin_susceptible.csv",
+    DATA_DIR / "ciprofloxacin_susceptible.csv",
     dtype={"Genome ID": str}
 )
 
@@ -124,7 +128,7 @@ genome_ids = list(
 if existing_data == "Y":
 
     feature_data = pd.read_csv(
-        "Bacterial-Antibiotic-Resistance-Predictor/data/feature_data.csv",
+        DATA_DIR / "feature_data.csv",
         dtype={"genome_id": str}
     )
 
@@ -174,7 +178,7 @@ else:
     genome_data = pd.DataFrame(genome_features)
 
     genome_data.to_csv(
-        "Bacterial-Antibiotic-Resistance-Predictor/data/genome_features.csv",
+        DATA_DIR / "genome_features.csv",
         index=False
     )
 
@@ -211,7 +215,7 @@ else:
     feature_data = genome_data[selected_features]
 
     feature_data.to_csv(
-        "Bacterial-Antibiotic-Resistance-Predictor/data/feature_data.csv",
+        DATA_DIR / "feature_data.csv",
         index=False
     )
 
